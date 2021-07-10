@@ -25,7 +25,7 @@ jobs:
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           signoff: false
           base: master
-          branch: PublishArticle
+          branch: master
           title: 'PublishNewArticle'
           body: |
             Testing to publish a new article.
