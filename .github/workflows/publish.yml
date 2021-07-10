@@ -1,0 +1,33 @@
+name: Publish Future Article
+on:
+  schedule:
+    - cron: '30 0 8 8 *' # Publish at 00:30 on August 8th UTC time.
+
+
+jobs:
+  createPullRequest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: site-update
+
+      # Required to make this commit ahead of the actual push
+      - name: Make changes to pull request
+        run: date +%s > lastAutoUpdate.txt
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Ready to publish
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          base: master
+          branch: PublishArticle
+          title: 'PublishNewArticle'
+          body: |
+            Testing to publish a new article.
+          labels: |
+            automerge
