@@ -1,33 +1,32 @@
-name: Publish Future Article
-on:
-  schedule:
-    - cron: '30 0 8 8 *' # Publish at 00:30 on August 8th UTC time.
+name: github pages
 
+on:
+  push:
+    branches:
+      - master # Set a branch to deploy
+  pull_request:
 
 jobs:
-  createPullRequest:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: site-update
+          submodules: true  # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      # Required to make this commit ahead of the actual push
-      - name: Make changes to pull request
-        run: date +%s > lastAutoUpdate.txt
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3.1.0
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Ready to publish
-          committer: GitHub <noreply@github.com>
-          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          signoff: false
-          base: master
-          branch: master
-          title: 'PublishNewArticle'
-          body: |
-            Testing to publish a new article.
-          labels: |
-            automerge
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Build
+        run: hugo --minify
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./compose
